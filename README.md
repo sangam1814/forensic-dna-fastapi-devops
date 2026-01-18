@@ -14,7 +14,7 @@ The project demonstrates backend development with DevOps practices like Docker, 
 
 ---
 
-📁 Project Structure
+## 📁 Project Structure
 
 forensic_dna_backend/
 ├── api/            # FastAPI application
