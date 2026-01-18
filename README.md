@@ -16,12 +16,14 @@ The project demonstrates backend development with DevOps practices like Docker, 
 
 ## 📁 Project Structure
 
+```text
 forensic_dna_backend/
 ├── api/            # FastAPI application
 ├── infra/          # Docker & infrastructure (Dockerfile, docker-compose, SQL init)
 ├── scripts/        # Data ingestion scripts
 ├── data/           # CSV / Excel datasets
 └── README.md
+```
 
 ---
 
