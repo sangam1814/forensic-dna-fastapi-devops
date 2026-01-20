@@ -1,7 +1,7 @@
 # 🧬 Forensic DNA Analysis – FastAPI + DevOps Project
 
 This is a Dockerized FastAPI backend for a Privacy-Aware Forensic DNA Analysis System using PostgreSQL.  
-The project demonstrates backend development with DevOps practices like Docker, docker-compose, environment variables, and data ingestion pipelines.
+The project demonstrates backend development with DevOps practices such as Docker, Docker Compose, environment variables, and data ingestion pipelines.
 
 ---
 
@@ -17,26 +17,25 @@ The project demonstrates backend development with DevOps practices like Docker, 
 ## 📁 Project Structure
 
 ```text
-forensic_dna_backend/
+forensic-dna-fastapi-devops/
 ├── api/            # FastAPI application
 ├── infra/          # Docker & infrastructure (Dockerfile, docker-compose, SQL init)
 ├── scripts/        # Data ingestion scripts
 ├── data/           # CSV / Excel datasets
 └── README.md
-```
 
----
 
-## ⚙️ How to Run
+⸻
 
-```bash
+⚙️ How to Run (Mac / Windows / Linux)
+
 git clone https://github.com/sangam1814/forensic-dna-fastapi-devops.git
-cd forensic-dna-fastapi-devops
-go inside infra folder then execute cmd mentioned below
+cd forensic-dna-fastapi-devops/infra
 docker-compose up --build
 
+After startup:
 	•	API: http://localhost:8000
-	•	Docs: http://localhost:8000/docs
+	•	Docs (Swagger UI): http://localhost:8000/docs
 
 ⸻
 
@@ -49,17 +48,23 @@ POST /auth/login
   "password": "admin"
 }
 
-Returns JWT token for authorized access.
+Returns a JWT token for authorized access.
+
+⚠️ Default credentials are for demo purposes only.
 
 ⸻
 
 📊 Data Ingestion
 
-Run inside Docker:
+Run inside Docker to load DNA data:
 
 docker-compose run api python /app/scripts/ingest_profiles.py
 
-Loads populations, loci, profiles, and genotypes into the database.
+This loads:
+	•	Populations
+	•	STR loci
+	•	DNA profiles
+	•	Genotype data
 
 ⸻
 
@@ -71,11 +76,11 @@ Loads populations, loci, profiles, and genotypes into the database.
 ⸻
 
 🛠 DevOps Highlights
-	•	Dockerized FastAPI service
-	•	PostgreSQL container
-	•	DB initialization using SQL scripts
-	•	Environment variables for configuration
-	•	One-command startup
+	•	Dockerized FastAPI backend
+	•	PostgreSQL container with initialization scripts
+	•	Environment variables for DB and security config
+	•	Data ingestion via Docker-executed scripts
+	•	One-command startup using Docker Compose
 
 ⸻
 
@@ -83,4 +88,3 @@ Loads populations, loci, profiles, and genotypes into the database.
 
 Sangam Raj
 GitHub: https://github.com/sangam1814
-
