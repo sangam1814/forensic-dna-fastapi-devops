@@ -1,7 +1,7 @@
 # 🧬 Forensic DNA Analysis – FastAPI + DevOps Project
 
 This is a Dockerized FastAPI backend for a Privacy-Aware Forensic DNA Analysis System using PostgreSQL.  
-The project demonstrates backend development with DevOps practices such as Docker, Docker Compose, environment variables, and data ingestion pipelines.
+The project demonstrates backend development with DevOps practices like Docker, docker-compose, environment variables, and data ingestion pipelines.
 
 ---
 
@@ -17,25 +17,26 @@ The project demonstrates backend development with DevOps practices such as Docke
 ## 📁 Project Structure
 
 ```text
-forensic-dna-fastapi-devops/
+forensic_dna_backend/
 ├── api/            # FastAPI application
 ├── infra/          # Docker & infrastructure (Dockerfile, docker-compose, SQL init)
 ├── scripts/        # Data ingestion scripts
 ├── data/           # CSV / Excel datasets
 └── README.md
+```
 
+---
 
-⸻
+## ⚙️ How to Run
 
-⚙️ How to Run (Mac / Windows / Linux)
-
+```bash
 git clone https://github.com/sangam1814/forensic-dna-fastapi-devops.git
-cd forensic-dna-fastapi-devops/infra
+cd forensic-dna-fastapi-devops
+go inside infra folder then execute cmd mentioned below
 docker-compose up --build
 
-After startup:
 	•	API: http://localhost:8000
-	•	Docs (Swagger UI): http://localhost:8000/docs
+	•	Docs: http://localhost:8000/docs
 
 ⸻
 
@@ -48,23 +49,17 @@ POST /auth/login
   "password": "admin"
 }
 
-Returns a JWT token for authorized access.
-
-⚠️ Default credentials are for demo purposes only.
+Returns JWT token for authorized access.
 
 ⸻
 
 📊 Data Ingestion
 
-Run inside Docker to load DNA data:
+Run inside Docker:
 
 docker-compose run api python /app/scripts/ingest_profiles.py
 
-This loads:
-	•	Populations
-	•	STR loci
-	•	DNA profiles
-	•	Genotype data
+Loads populations, loci, profiles, and genotypes into the database.
 
 ⸻
 
@@ -76,11 +71,11 @@ This loads:
 ⸻
 
 🛠 DevOps Highlights
-	•	Dockerized FastAPI backend
-	•	PostgreSQL container with initialization scripts
-	•	Environment variables for DB and security config
-	•	Data ingestion via Docker-executed scripts
-	•	One-command startup using Docker Compose
+	•	Dockerized FastAPI service
+	•	PostgreSQL container
+	•	DB initialization using SQL scripts
+	•	Environment variables for configuration
+	•	One-command startup
 
 ⸻
 
