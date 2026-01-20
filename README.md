@@ -27,12 +27,12 @@ forensic_dna_backend/
 
 ---
 
-## ⚙️ How to Run
+## ⚙️ How to Run (Mac/Windows/Linux)
 
 ```bash
 git clone https://github.com/sangam1814/forensic-dna-fastapi-devops.git
-cd forensic-dna-fastapi-devops
-go inside infra folder then execute cmd mentioned below
+Note: Open the terminal inside the cloned project folder (or navigate to it using the correct path).
+cd forensic-dna-fastapi-devops/infra
 docker-compose up --build
 
 	•	API: http://localhost:8000
@@ -56,6 +56,12 @@ Returns JWT token for authorized access.
 📊 Data Ingestion
 
 Run inside Docker:
+
+open new terminal terminal.
+
+go to infra folder.
+
+then execute the cmd below.
 
 docker-compose run api python /app/scripts/ingest_profiles.py
 
