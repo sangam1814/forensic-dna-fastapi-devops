@@ -32,6 +32,7 @@ forensic_dna_backend/
 ```bash
 git clone https://github.com/sangam1814/forensic-dna-fastapi-devops.git
 cd forensic-dna-fastapi-devops
+go inside infra folder then execute cmd mentioned below
 docker-compose up --build
 
 	•	API: http://localhost:8000
