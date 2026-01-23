@@ -4,7 +4,7 @@ INSERT INTO roles (code, description) VALUES
 ('investigator', 'Investigator'),
 ('field', 'Field officer');
 
--- admin user (PLAIN password for now)
+-- admin user (HASHED password)
 INSERT INTO users (
   id,
   email,
@@ -18,6 +18,6 @@ VALUES (
   'admin',
   'System Admin',
   (SELECT id FROM roles WHERE code='admin'),
-  'admin',
+  '$2b$12$GaO.ELBMYzivpE151vpzA.Izg0KHs.zguI/0SmFcfrqbAfqRBiM86',
   true
 );
