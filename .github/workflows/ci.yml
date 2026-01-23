@@ -1,10 +1,6 @@
-name: CI - FastAPI Docker Build
+name: CI
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: push
 
 jobs:
   build:
@@ -18,15 +14,19 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: |
-          docker build -t forensic-dna-api -f infra/Dockerfile .
+        run: docker build -t forensic-dna-api -f infra/Dockerfile .
 
-      - name: Run container (smoke test)
+      # 🔥 CI TEST STEP STARTS HERE
+      - name: Run container
         run: |
-          docker run -d -p 8000:8000 --name test_api forensic-dna-api
-          sleep 10
-          docker ps
+          docker run -d -p 8000:8000 --name dna_api_test forensic-dna-api
+
+      - name: Wait for API
+        run: sleep 10
+
+      - name: Smoke test (/docs)
+        run: |
+          curl --fail http://localhost:8000/docs
 
       - name: Stop container
-        run: |
-          docker stop test_api
+        run: docker stop dna_api_test
