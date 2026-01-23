@@ -30,3 +30,11 @@ jobs:
 
       - name: Stop container
         run: docker stop dna_api_test
+
+      - name: Health check (API)
+        run: |
+          curl --fail http://localhost:8000/health
+
+      - name: Health check (DB)
+        run: |
+          curl --fail http://localhost:8000/health/db
