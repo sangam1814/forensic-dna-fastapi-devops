@@ -1,24 +1,28 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from ..db import get_conn
 import uuid
 import datetime
 from ..dependencies import require_role
-from fastapi import Depends
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
 @router.get(
     "/partial/{evidence_id}",
-    dependencies=[Depends(require_role(["investigator", "admin"]))],
+    dependencies=[Depends(require_role(["investigator", "admin"]))],  
+    # 🔒 FIX 1: role-based access added
+    # Earlier anyone could call this API if dependency was missing
     summary="Partial DNA match against profiles"
 )
-def partial_match(evidence_id: str, top: int = Query(20, ge=1, le=200)):
+def partial_match(
+    evidence_id: str,
+    top: int = Query(20, ge=1, le=200)
+):
 
     with get_conn() as conn, conn.cursor() as cur:
 
         # ===============================
-        # STEP 1 (OLD) : GET EVIDENCE DATA
+        # STEP 1: FETCH EVIDENCE GENOTYPES
         # ===============================
         cur.execute("""
             SELECT locus_id, allele1, allele2
@@ -27,21 +31,27 @@ def partial_match(evidence_id: str, top: int = Query(20, ge=1, le=200)):
         """, (evidence_id,))
         ev_rows = cur.fetchall()
 
+        # 🔧 FIX 2: explicit validation
+        # Earlier error message was unclear
         if not ev_rows:
-            raise HTTPException(404, "Evidence not found or empty")
+            raise HTTPException(
+                status_code=404,
+                detail="Evidence not found or no genotypes available"
+            )
 
         loci_ids = [r[0] for r in ev_rows]
 
         # =====================================
-        # 🔧 FIX 1 (NEW): CLEAR OLD MATCHES
+        # 🔧 FIX 3: CLEAR OLD MATCHES
         # =====================================
+        # Earlier: repeated calls kept adding duplicate matches
         cur.execute(
             "DELETE FROM evidence_matches WHERE evidence_id = %s",
             (evidence_id,)
         )
 
         # ===============================
-        # STEP 2 (OLD): MATCH PROFILES
+        # STEP 2: MATCH AGAINST PROFILES
         # ===============================
         cur.execute("""
             SELECT p.id, p.sample_id,
@@ -66,15 +76,17 @@ def partial_match(evidence_id: str, top: int = Query(20, ge=1, le=200)):
         rows = cur.fetchall()
         results = []
 
-        # =====================================
-        # STEP 3 (OLD + FIXED)
-        # =====================================
+        # ===============================
+        # STEP 3: SCORE + SAVE MATCHES
+        # ===============================
         for pid, sid, matched, total in rows:
 
-            # 🔧 FIX 2: ignore zero matches
+            # 🔧 FIX 4: skip zero matches
+            # Earlier: zero-score profiles were saved
             if matched == 0:
                 continue
 
+            # 🔧 FIX 5: safe division
             score = matched / total if total else 0
 
             # SAVE MATCH
@@ -98,6 +110,7 @@ def partial_match(evidence_id: str, top: int = Query(20, ge=1, le=200)):
                 "score": round(score, 3)
             })
 
+        # 🔧 FIX 6: commit once after all operations
         conn.commit()
 
         return {

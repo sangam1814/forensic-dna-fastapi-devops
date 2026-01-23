@@ -1,0 +1,32 @@
+name: CI - FastAPI Docker Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t forensic-dna-api .
+
+      - name: Run container (smoke test)
+        run: |
+          docker run -d -p 8000:8000 --name test_api forensic-dna-api
+          sleep 10
+          docker ps
+
+      - name: Stop container
+        run: |
+          docker stop test_api

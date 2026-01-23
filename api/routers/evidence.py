@@ -35,10 +35,13 @@ class EvidenceIn(BaseModel):
 
 @router.post(
     "",
-    dependencies=[Depends(require_role(["field", "investigator", "admin"]))],
     summary="Submit evidence sample with genotypes"
 )
-def submit_evidence(body: EvidenceIn):
+def submit_evidence(
+    body: EvidenceIn,
+    user=Depends(require_role(["field", "investigator", "admin"]))  
+    # 🔧 FIX: capture authenticated user payload (id + role)
+):
 
     # 🔧 FIX 2: prevent empty genotype submission
     if not body.genotypes:
@@ -61,10 +64,11 @@ def submit_evidence(body: EvidenceIn):
             # STEP 1: insert evidence
             cur.execute("""
                 INSERT INTO evidence (id, evidence_code, submitted_by, metadata)
-                VALUES (%s, %s, NULL, %s)
+                VALUES (%s, %s, %s, %s)
             """, (
                 evidence_id,
                 body.sample_id or evidence_id,
+                user["sub"],  # ✅ FIX: use user ID from JWT payload
                 json.dumps(metadata)
             ))
 

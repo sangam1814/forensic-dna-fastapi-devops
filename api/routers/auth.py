@@ -3,12 +3,19 @@ from pydantic import BaseModel
 from jose import jwt
 import datetime
 import os
+from passlib.context import CryptContext
 from ..db import get_conn
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 SECRET = os.getenv("JWT_SECRET", "dev-secret-key")
 ALGO = "HS256"
+
+# ✅ SUPPORT BOTH OLD (bcrypt) AND NEW (argon2)
+pwd_context = CryptContext(
+    schemes=["argon2", "bcrypt"],
+    deprecated="auto"
+)
 
 class LoginIn(BaseModel):
     email: str
@@ -26,13 +33,13 @@ def login(body: LoginIn):
         row = cur.fetchone()
 
         if not row:
-            raise HTTPException(401, "Invalid credentials")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
 
         user_id, password_hash, role = row
 
-        # ✅ SIMPLE CHECK (DB me "admin" hai)
-        if body.password != password_hash:
-            raise HTTPException(401, "Invalid credentials")
+        # ✅ SINGLE, CORRECT VERIFICATION
+        if not pwd_context.verify(body.password, password_hash):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
 
         payload = {
             "sub": str(user_id),
