@@ -1,3 +1,4 @@
+from logging import getLogger
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from jose import jwt
@@ -5,6 +6,8 @@ import datetime
 import os
 from passlib.context import CryptContext
 from ..db import get_conn
+
+logger = getLogger("dna-api")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -23,6 +26,10 @@ class LoginIn(BaseModel):
 
 @router.post("/login")
 def login(body: LoginIn):
+
+    # ✅ log attempt
+    logger.info(f"Login attempt for user: {body.email}")
+
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
             SELECT u.id, u.password_hash, r.code
@@ -33,12 +40,15 @@ def login(body: LoginIn):
         row = cur.fetchone()
 
         if not row:
+            # ✅ log failure
+            logger.warning(f"Invalid login (user not found): {body.email}")
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         user_id, password_hash, role = row
 
-        # ✅ SINGLE, CORRECT VERIFICATION
         if not pwd_context.verify(body.password, password_hash):
+            # ✅ log failure
+            logger.warning(f"Invalid password for user: {body.email}")
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         payload = {
@@ -48,6 +58,9 @@ def login(body: LoginIn):
         }
 
         token = jwt.encode(payload, SECRET, algorithm=ALGO)
+
+        # ✅ log success
+        logger.info(f"Login successful for user: {body.email}")
 
         return {
             "access_token": token,

@@ -4,3 +4,5 @@ psycopg[binary]
 python-jose
 passlib[argon2]
 argon2-cffi
+prometheus-fastapi-instrumentator
+python-json-logger
