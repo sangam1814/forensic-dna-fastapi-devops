@@ -1,6 +1,6 @@
 ---
 
-# 🧬 Forensic DNA Analysis – FastAPI + DevOps Project
+# 🧬 DNA Forensic Profile Management System – FastAPI + DevOps Project
 
 This project is a **Dockerized FastAPI backend** for a Privacy-Aware Forensic DNA Analysis System using **PostgreSQL**.
 It demonstrates backend development combined with **DevOps practices** such as containerization, service orchestration, monitoring, and centralized logging.
