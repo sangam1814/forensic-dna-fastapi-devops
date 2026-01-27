@@ -1,91 +1,150 @@
+---
+
 # 🧬 Forensic DNA Analysis – FastAPI + DevOps Project
 
-This is a Dockerized FastAPI backend for a Privacy-Aware Forensic DNA Analysis System using PostgreSQL.  
-The project demonstrates backend development with DevOps practices like Docker, docker-compose, environment variables, and data ingestion pipelines.
+This project is a **Dockerized FastAPI backend** for a Privacy-Aware Forensic DNA Analysis System using **PostgreSQL**.
+It demonstrates backend development combined with **DevOps practices** such as containerization, service orchestration, monitoring, and centralized logging.
 
 ---
 
 ## 🚀 Tech Stack
 
-- FastAPI (Python)
-- PostgreSQL
-- JWT Authentication (RBAC)
-- Docker & Docker Compose
+* Python (FastAPI)
+* PostgreSQL
+* JWT Authentication (Admin-only)
+* Docker & Docker Compose
+* Prometheus (Monitoring)
+* Grafana (Metrics Visualization)
+* Promtail & Loki (Centralized Logging)
 
 ---
 
 ## 📁 Project Structure
 
 ```text
-forensic_dna_backend/
-├── api/            # FastAPI application
-├── infra/          # Docker & infrastructure (Dockerfile, docker-compose, SQL init)
-├── scripts/        # Data ingestion scripts
-├── data/           # CSV / Excel datasets
+forensic-dna-fastapi-devops/
+├── api/                 # FastAPI application
+│   ├── main.py
+│   ├── logging_config.py
+│   └── routers/
+├── infra/               # Infrastructure and DevOps configs
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── prometheus.yml
+│   └── promtail.yml
+├── scripts/             # Data ingestion scripts
+├── data/                # CSV datasets
 └── README.md
 ```
 
 ---
 
-## ⚙️ How to Run (Mac/Windows/Linux)
+## ⚙️ How to Run the Project (Mac / Linux / Windows)
+
+### 1️⃣ Clone the repository
 
 ```bash
 git clone https://github.com/sangam1814/forensic-dna-fastapi-devops.git
-Note: Open the terminal inside the cloned project folder (or navigate to it using the correct path).
+```
+
+### 2️⃣ Navigate to infrastructure directory
+
+```bash
 cd forensic-dna-fastapi-devops/infra
+```
+
+### 3️⃣ Build and start all services
+
+```bash
 docker-compose up --build
+```
 
-	•	API: http://localhost:8000
-	•	Docs: http://localhost:8000/docs
+✅ This starts all services, but **the database will be empty initially**.
 
-⸻
+---
 
-🔐 Authentication
+## 📊 Data Ingestion (REQUIRED)
 
-POST /auth/login
+⚠️ **This step is mandatory. APIs will not return data until ingestion is completed.**
 
+Open a **new terminal window**, then run:
+
+```bash
+cd forensic-dna-fastapi-devops/infra
+docker-compose run api python /app/scripts/ingest_profiles.py
+```
+
+This command loads:
+
+* Populations
+* Loci
+* DNA profiles
+* Genotypes
+
+into the PostgreSQL database.
+
+---
+
+## 🌐 Service URLs
+
+* **API**: [http://localhost:8000](http://localhost:8000)
+* **Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Prometheus**: [http://localhost:9090](http://localhost:9090)
+* **Grafana**: [http://localhost:3000](http://localhost:3000)
+
+  * Default credentials: `admin / admin`
+
+---
+
+## 🔐 Authentication (Admin Only)
+
+**POST** `/auth/login`
+
+```json
 {
   "email": "admin",
   "password": "admin"
 }
+```
 
-Returns JWT token for authorized access.
+Returns a **JWT token** required for accessing protected APIs.
 
-⸻
+---
 
-📊 Data Ingestion
+## 🧪 Example API Endpoints
 
-Run inside Docker:
+* **GET** `/populations`
+* **GET** `/loci`
+* **GET** `/profiles/{sample_id}`
 
-open new terminal terminal.
+(Requires JWT token)
 
-go to infra folder.
+---
 
-then execute the cmd below.
+## 📈 Monitoring & Logging
 
-docker-compose run api python /app/scripts/ingest_profiles.py
+* **Prometheus** collects application and system metrics.
+* **Grafana** visualizes metrics using dashboards.
+* **Promtail** collects container logs.
+* **Loki** stores and enables querying of logs.
+* Application logs are written in a structured format to support observability and debugging.
 
-Loads populations, loci, profiles, and genotypes into the database.
+---
 
-⸻
+## 🛠 DevOps Highlights
 
-🧪 Example APIs
-	•	GET /populations
-	•	GET /loci
-	•	GET /profiles/{sample_id}
+* Containerized backend and database services using Docker
+* Managed multi-service setup using Docker Compose
+* Integrated monitoring for application and system health
+* Implemented centralized logging for containers and application logs
+* Used environment variables for runtime configuration
+* Enabled full stack startup using simple Docker Compose commands
 
-⸻
+---
 
-🛠 DevOps Highlights
-	•	Dockerized FastAPI service
-	•	PostgreSQL container
-	•	DB initialization using SQL scripts
-	•	Environment variables for configuration
-	•	One-command startup
+## 👤 Author
 
-⸻
+**Sangam Raj**
+GitHub: [https://github.com/sangam1814](https://github.com/sangam1814)
 
-👤 Author
-
-Sangam Raj
-GitHub: https://github.com/sangam1814
+---
