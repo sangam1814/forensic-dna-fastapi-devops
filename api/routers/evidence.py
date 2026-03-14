@@ -1,18 +1,17 @@
-from fastapi import Depends
-from ..dependencies import require_role
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional
+from ..dependencies import require_role
 from ..db import get_conn
-from ..utils.audit import write_audit   # 🔧 FIX 1: audit logging added
 import json
 import uuid
 import datetime
 
 router = APIRouter(prefix="/evidence", tags=["evidence"])
 
+
 # =====================================================
-# INPUT MODELS (VALIDATION LAYER)
+# INPUT MODELS
 # =====================================================
 
 class GenotypeIn(BaseModel):
@@ -30,20 +29,13 @@ class EvidenceIn(BaseModel):
 
 # =====================================================
 # POST /evidence
-# Submit new evidence sample
 # =====================================================
 
-@router.post(
-    "",
-    summary="Submit evidence sample with genotypes"
-)
+@router.post("", summary="Submit evidence sample with genotypes")
 def submit_evidence(
     body: EvidenceIn,
-    user=Depends(require_role(["field", "investigator", "admin"]))  
-    # 🔧 FIX: capture authenticated user payload (id + role)
+    user=Depends(require_role(["field", "investigator", "admin"]))
 ):
-
-    # 🔧 FIX 2: prevent empty genotype submission
     if not body.genotypes:
         raise HTTPException(
             status_code=400,
@@ -61,18 +53,18 @@ def submit_evidence(
 
     with get_conn() as conn, conn.cursor() as cur:
         try:
-            # STEP 1: insert evidence
+            # Insert evidence
             cur.execute("""
                 INSERT INTO evidence (id, evidence_code, submitted_by, metadata)
                 VALUES (%s, %s, %s, %s)
             """, (
                 evidence_id,
                 body.sample_id or evidence_id,
-                user["sub"],  # ✅ FIX: use user ID from JWT payload
+                user["sub"],
                 json.dumps(metadata)
             ))
 
-            # STEP 2: insert genotypes with locus validation
+            # Insert genotypes
             for g in body.genotypes:
                 cur.execute(
                     "SELECT id FROM str_loci WHERE locus = %s",
@@ -97,23 +89,10 @@ def submit_evidence(
                     g.allele2
                 ))
 
-            # 🔧 FIX 3: WRITE AUDIT LOG (NEW)
-            write_audit(
-                cur,
-                action="CREATE",
-                entity="evidence",
-                entity_id=evidence_id,
-                details={
-                    "sample_id": body.sample_id,
-                    "genotypes_count": len(body.genotypes)
-                }
-            )
-
-            # 🔧 FIX 4: commit everything together
             conn.commit()
 
         except Exception:
-            conn.rollback()   # 🔧 FIX 5: rollback on any failure
+            conn.rollback()
             raise
 
     return {
@@ -123,8 +102,7 @@ def submit_evidence(
 
 
 # =====================================================
-# GET /evidence
-# List recent evidence
+# GET /evidence (LIST)
 # =====================================================
 
 @router.get(
@@ -132,8 +110,6 @@ def submit_evidence(
     dependencies=[Depends(require_role(["investigator", "admin"]))],
     summary="List recent evidence"
 )
-
-
 def list_evidence(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0)
@@ -155,7 +131,7 @@ def list_evidence(
                     "id": str(r[0]),
                     "evidence_code": r[1],
                     "received_at": r[2].isoformat() if r[2] else None,
-                    "metadata": json.loads(r[3]) if r[3] else None
+                    "metadata": r[3]   # ✅ JSON already decoded
                 }
                 for r in rows
             ]
@@ -164,7 +140,6 @@ def list_evidence(
 
 # =====================================================
 # GET /evidence/{evidence_id}
-# Get single evidence with genotypes
 # =====================================================
 
 @router.get(
@@ -198,9 +173,13 @@ def get_evidence(evidence_id: str):
             "evidence_code": row[1],
             "submitted_by": str(row[2]) if row[2] else None,
             "received_at": row[3].isoformat() if row[3] else None,
-            "metadata": json.loads(row[4]) if row[4] else None,
+            "metadata": row[4],   # ✅ NO json.loads
             "genotypes": [
-                {"locus": r[0], "allele1": r[1], "allele2": r[2]}
+                {
+                    "locus": r[0],
+                    "allele1": r[1],
+                    "allele2": r[2]
+                }
                 for r in cur.fetchall()
             ]
         }

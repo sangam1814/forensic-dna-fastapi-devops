@@ -24,6 +24,7 @@ class LoginIn(BaseModel):
     email: str
     password: str
 
+#login endpoint - returns JWT token
 @router.post("/login")
 def login(body: LoginIn):
 

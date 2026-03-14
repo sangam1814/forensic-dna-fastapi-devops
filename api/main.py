@@ -4,14 +4,23 @@ setup_logging()   # ✅ VERY IMPORTANT: must be before app = FastAPI()
 
 # --------------------------------------------
 
+
 from fastapi import FastAPI
 from .routers import populations, loci, profiles, evidence, matches, auth
 from api.routers.health import router as health_router
 from prometheus_fastapi_instrumentator import Instrumentator
-
+from fastapi.middleware.cors import CORSMiddleware
 # --------------------------------------------
 
 app = FastAPI(title="Privacy-Aware Forensic DNA API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --------------------------------------------
 # register all routers

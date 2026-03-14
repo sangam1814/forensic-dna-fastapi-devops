@@ -26,14 +26,47 @@ def list_profiles(
     - Only authenticated users with proper roles can list profiles.
     """
 
-    # Build SQL dynamically based on filters
-    sql = [
-        "SELECT p.id, p.sample_id, pop.name "
-        "FROM profiles p "
-        "JOIN populations pop ON pop.id = p.population_id"
-    ]
+    # # Build SQL dynamically based on filters
+    # sql = [
+    #     "SELECT p.id, p.sample_id, pop.name "
+    #     "FROM profiles p "
+    #     "JOIN populations pop ON pop.id = p.population_id"
+    # ]
+    # where = []
+    # params: list = []
+
+    # if q:
+    #     where.append("p.sample_id ILIKE %s")
+    #     params.append(q + "%")
+
+    # if population:
+    #     where.append("pop.name = %s")
+    #     params.append(population)
+
+    # if where:
+    #     sql.append("WHERE " + " AND ".join(where))
+
+    # sql.append("ORDER BY p.sample_id LIMIT %s OFFSET %s")
+    # params.extend([limit, offset])
+
+    # query = " ".join(sql)
+
+    # with get_conn() as conn, conn.cursor() as cur:
+    #     cur.execute(query, tuple(params))
+    #     rows = cur.fetchall()
+
+    #     return [
+    #         {"id": r[0], "sample_id": r[1], "population": r[2]}
+    #         for r in rows
+    #     ]
+
+    base_sql = """
+        FROM profiles p
+        JOIN populations pop ON pop.id = p.population_id
+    """
+
     where = []
-    params: list = []
+    params = []
 
     if q:
         where.append("p.sample_id ILIKE %s")
@@ -43,22 +76,36 @@ def list_profiles(
         where.append("pop.name = %s")
         params.append(population)
 
+    where_clause = ""
     if where:
-        sql.append("WHERE " + " AND ".join(where))
-
-    sql.append("ORDER BY p.sample_id LIMIT %s OFFSET %s")
-    params.extend([limit, offset])
-
-    query = " ".join(sql)
+        where_clause = " WHERE " + " AND ".join(where)
 
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(query, tuple(params))
+
+        # 🔢 Total count query
+        count_query = "SELECT COUNT(*) " + base_sql + where_clause
+        cur.execute(count_query, tuple(params))
+        total = cur.fetchone()[0]
+
+        # 📄 Paginated data query
+        data_query = (
+            "SELECT p.id, p.sample_id, pop.name "
+            + base_sql
+            + where_clause
+            + " ORDER BY p.sample_id LIMIT %s OFFSET %s"
+        )
+
+        cur.execute(data_query, tuple(params + [limit, offset]))
         rows = cur.fetchall()
 
-        return [
+    return {
+        "items": [
             {"id": r[0], "sample_id": r[1], "population": r[2]}
             for r in rows
-        ]
+        ],
+        "total": total
+    }
+
 
 
 # =====================================================
